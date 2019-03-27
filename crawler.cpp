@@ -2,8 +2,8 @@
 #include<stdlib.h>
 #include<stdio.h>
 #include<cstring>
-#include<sys/types.h>
-#include<sys/stat.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include<fstream>
 //#include <html.h>
 #define HASH_SIZE 100
@@ -23,7 +23,7 @@ int depth=2;
 int updatedepth=1;
 int file_no=1;
 char *links[100];
-
+int current_depth=1;
 class list
 {
 public:
@@ -62,6 +62,7 @@ void NormalizeWord(char* word);
 int NormalizeURL(char* URL) ;
 void removeWhiteSpace(char* html);
 void validateUrl(char *);
+void workOnNextUrl();
 
 
 int GetNextURL(char* html, char* urlofthispage, char* result, int pos)
@@ -233,6 +234,69 @@ int NormalizeURL(char* URL)
 }
 
 
+void make_backup()
+{
+	ofstream fout;
+	fout.open("/home/avnish/Desktop/crawler_backup/backup.txt",ofstream::trunc);
+	list *p=list_head->next;
+	while(p!=NULL)
+	{
+		fout<<p->url<<" ";
+		fout<<p->key<<" ";
+		fout<<p->dept<<" ";
+		fout<<p->visit<<" "<<endl;
+		p=p->next;
+	}
+	fout.close();
+}
+
+void read_from_backup()
+{
+	ifstream fin;
+	fin.open("/home/avnish/Desktop/crawler_backup/backup.txt");
+	while(!fin.eof())
+	{
+		char s[500],k[5],val[5],d[5];
+		list *n;
+		n=new list();
+		fin>>s;
+		strcpy(n->url,s);
+		fin>>k;
+		n->key=atoi(k);
+		fin>>d;
+		n->dept=atoi(d);
+		fin>>val;
+		n->visit=atoi(val);
+		//n->dept=1;
+		n->prev=list_prev;
+		list_prev->next=n;
+		list_prev=n;
+		if(hash_map[n->key].node==NULL)
+		{
+			hash_map[n->key].node=n;
+			hash_map[n->key].last_node=n;
+			hash_map[n->key].total_nodes++;
+
+		}
+		else
+		{
+			hash_map[n->key].last_node=n;
+			hash_map[n->key].total_nodes++;
+		}
+		//cout<<s<<endl;
+	}
+	list *x=list_head;
+	while(x!=NULL)
+	{
+		cout<<x->url<<" "<<x->dept<<" "<<x->visit<<" "<<x->key<<endl;
+		x=x->next;
+	}
+	fin.close();
+	//current_node=list_head;
+	//workOnNextUrl();
+
+}
+
 void removeWhiteSpace(char* html)
 {
   int i;
@@ -259,19 +323,70 @@ int validateDepth(list *ptr)
 }
 
 
+void delay()
+{
+	int i,j;
+	for(i=0;i<1000;i++)
+	{
+		for(j=0;j<2000;j++)
+		{
+
+		}
+	}
+}
+
 void workOnNextUrl()
 {
-	current_node=current_node->next;
+/*	current_node=current_node->next;
 	//validateUrl(current_node->url);
 	//cout<<"yesss"<<endl;
-	if(current_node!=NULL&&current_node->dept<=depth+1)
+	if(current_node!=NULL)
 	{
 		//cout<<"yesss"<<endl;
+		if(current_node->dept<=depth&&current_node->visit==0)
+		{
 		current_node->visit=1;
+		//	make_backup();
+		validateUrl(current_node->url);
+	//	cout<<endl<<endl<<endl<<current_node->url<<"   "<<current_node->visit<<"    "<<current_node->dept<<endl<<endl<<endl;
+		}
+		else
+		{
+		//current_node=current_node->next;
+		//cout<<endl<<"working"<<endl;
+		workOnNextUrl();
+		}
 		//if(current_node->dept<=depth)
-		cout<<endl<<endl<<endl<<current_node->url<<"   "<<current_node->visit<<"    "<<current_node->dept<<endl<<endl<<endl;
-	validateUrl(current_node->url);
   }
+
+		current_node=list_head;*/
+		list *p=new list();
+		while(current_depth<=depth)
+		{
+		//	cout<<endl<<"yess"<<endl;
+			p=list_head->next;
+			while(p!=NULL)
+			{
+			//	cout<<endl<<"yessss"<<endl;
+				if(current_depth==p->dept&&p->visit==0)
+				{
+					current_node=p;
+					current_node->visit=1;
+					validateUrl(current_node->url);
+				}
+				p=p->next;
+				delay();
+			}
+			current_depth++;
+		}
+		p=list_head;
+		while(p!=NULL)
+		{
+			list *x;
+			x=p;
+			p=p->next;
+			free(x);
+		}
 }
 
 
@@ -363,6 +478,7 @@ void makeList(char *html_buffer , int fsize)
 		char *result;
 		result=(char*)malloc(500);
 		pos=GetNextURL(html_buffer,base_url,result,pos);
+
 		//cout<<html_buffer<<endl<<"7";
 	//	cout<<result<<"               "<<strlen(result)<<endl;
 		if(NormalizeURL(result)&&strlen(result)<80)
@@ -429,7 +545,7 @@ void copyFile()
 		str=new char[500];
 		getFileName(str);
 	//cout<<endl<<endl<<endl<<"copyfile"<<endl<<endl<<endl;
-	//cout<<endl<<endl<<endl<<str<<endl<<endl<<endl;
+	//	cout<<endl<<endl<<endl<<str<<endl<<endl<<endl;
 		char x[1000];
 	  ifstream fin;
 	  ofstream fout;
@@ -442,8 +558,8 @@ void copyFile()
 		fin>>html_buffer;
 		while(!fin.eof())
 		{
-			fin>>x;
-			strcat(html_buffer,x);
+		fin>>x;
+		strcat(html_buffer,x);
 		}
 		fout<<html_buffer;
 	  fout.close();
@@ -526,7 +642,8 @@ void validateUrl(char *strn)
     }
   else
 	{
-    //printf("Invalid URL");
+
+    printf("Invalid URL");
 		workOnNextUrl();
 	}
 }
@@ -555,9 +672,9 @@ void checkCreteria(int n)
 {
 	  if(n==4)
 	  {
-				checkDepth();
-				checkUrl();
-				testDir(str3);
+	checkDepth();
+	checkUrl();
+	testDir(str3);
 	  }
 	  else
 	  {
@@ -583,7 +700,18 @@ int main(int argc,char *argv[])
 	//hash_map[x]->total_nodes++;
 //	cout<<head->url<<endl;
 //  cout<<str1<<endl<<str2<<endl<<str3;
+	//read_from_backup();
+	checkCreteria(argc);
+/*if(list_head->next==NULL)
+{
+	//cout<<endl<<endl<<"yess"<<endl<<endl;
 checkCreteria(argc);
-//crawl(str);
+
+}
+else
+{
+//	cout<<endl<<endl<<"yesssssss"<<endl<<endl;
+workOnNextUrl();
+}//crawl(str);*/
 return 0;
 }
