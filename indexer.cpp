@@ -103,5 +103,4 @@ int main()
 		i++;
 		delete htmlBuffer;
 	}
-	//cout<<"FUCK";
 }
