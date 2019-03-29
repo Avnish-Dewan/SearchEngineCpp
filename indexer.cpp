@@ -8,6 +8,7 @@
 #include<vector>
 //#include "crawler.cpp"
 using namespace std;
+int id=0;
 //int file_no=1;
 char *words[1000];
 int findFileSize(char *str)
@@ -18,8 +19,52 @@ int findFileSize(char *str)
 	return st.st_size;
 }
 
+//Extract Words
+int extractWords(vector<char> v,int x)
+{
+	int j;
+	bool inWord=false;
+	/*for(int i=0;i<v.size();i++)
+	{
+		cout<<v[i];
+	}*/
+	for(int i=x;i<v.size();i++)
+	{
+		if(v[i]==' '|| v[i] == '-')
+		{
+			if(inWord==true)
+			{
+				words[id][j]='\0';
+				//cout<<v[i]<<" ";
+				cout<<words[id++]<<endl;
+				return i;
+			}
+			inWord=false;
+		}
+		else
+		{
+			if(inWord==false)
+			{
+				j=0;
+				words[id]=new char[20];
+				words[id][j++]=v[i];
+				inWord=true;
+			}
+			else
+			{
+				words[id][j++]=v[i];
+			}
+		}
+	}
+	if(inWord==true)
+	{
+		words[id][++j]='\0';
+	}
+	return -1;
+}
+
 //return the last position of title tag
-int findWord(char *html,int pos,int id)
+int findWordsInTitle(char *html,int pos)
 {
 	int i;
 	vector<char> v;
@@ -33,25 +78,18 @@ int findWord(char *html,int pos,int id)
 				i++;
 			}
 			i++;
-			//int j=0;
+			int j=0;
 			while(html[i] != '<')
 			{
 				v.push_back(html[i]);
 				i++;
-				//j++;
 			}
-			/*for(int j=0;j<v.size();j++)
+			int x=0;
+			while(x!=-1)
 			{
-				cout<<v[j];
-			}*/
-			words[id]=new char[v.size()+1];
-			for(int j=0;j<v.size();j++)
-			{
-				words[id][j]=v[j];
+				x=extractWords(v,x);
 			}
-			words[id][v.size()]='\0';
 			v.clear();
-			//cout<<result<<endl;
 			return i;
 			//break;
 		}
@@ -65,42 +103,37 @@ void getFileName(char *str,int fileNo)
 	sprintf(str,"/home/avnish/Desktop/sefiles/temp%d.txt",fileNo);
 	//file_no++;
 }
-char* getFile(int fileNo,char *htmlBuffer)
+void getFile(int fileNo)
 {
 	char str[100];
 	getFileName(str,fileNo);
 	int fsize=findFileSize(str);
-	htmlBuffer=new char[fsize+1];
-	ifstream fin(str);
-	char x;
+	char *htmlBuffer=new char[fsize+1];
+	ifstream in(str);
 	int i=0;
-	while(!fin.eof())
+	char x;
+	while(in.get(x))
 	{
-		x=fin.get();
-		htmlBuffer[i]=x;
-		i++;
+		htmlBuffer[i++]=x;
 	}
-	//htmlBuffer[i]='\0';
-	return htmlBuffer;
-	//cout<<str<<" "<<fsize<<endl;
-
+	int pos=0;
+	while(pos!=-1)
+	{
+		pos=findWordsInTitle(htmlBuffer,pos);
+	}
+	//cout<<htmlBuffer;
+	//cout<<str<<endl;
 }
 int main()
 {
 	int i=1;
-	while(i<=10)
+	getFile(i);
+	/*while(i<=10)
 	{
-		cout<<"HELLO";
+		//cout<<"HELLO";
+		//cout<<endl<<endl<<endl<<endl<<endl;
 		int pos=0;
-		char *htmlBuffer;
-		htmlBuffer=getFile(i,htmlBuffer);
-		int id=0;
-		while(pos!=-1)
-		{
-			pos=findWord(htmlBuffer,pos,id);
-			cout<<words[id++]<<endl<<pos<<endl;
-		}
+		getFile(i);
 		i++;
-		delete htmlBuffer;
-	}
+	}*/
 }
