@@ -10,6 +10,16 @@
 using namespace std;
 int id=0;
 //int file_no=1;
+
+//structure for making make List
+struct Node
+{
+	char word[25];
+	struct Node* next;
+};
+
+struct Node *head=(Node*)malloc(sizeof(Node));
+
 char *words[1000];
 int findFileSize(char *str)
 {
@@ -17,6 +27,12 @@ int findFileSize(char *str)
 	stat(str,&st); // temp.txt is the file where wget fetch the html
 
 	return st.st_size;
+}
+
+//Make Linked List
+void makeList()
+{
+
 }
 
 //Extract Words
@@ -36,7 +52,7 @@ int extractWords(vector<char> v,int x)
 			{
 				words[id][j]='\0';
 				//cout<<v[i]<<" ";
-				cout<<words[id++]<<endl;
+				//cout<<words[id++]<<endl;
 				return i;
 			}
 			inWord=false;
@@ -58,6 +74,7 @@ int extractWords(vector<char> v,int x)
 	}
 	if(inWord==true)
 	{
+		//cout<<words[id]<<endl;
 		words[id][++j]='\0';
 	}
 	return -1;
@@ -88,6 +105,7 @@ int findWordsInTitle(char *html,int pos)
 			while(x!=-1)
 			{
 				x=extractWords(v,x);
+				//cout<<words[id];
 			}
 			v.clear();
 			return i;
@@ -127,13 +145,13 @@ void getFile(int fileNo)
 int main()
 {
 	int i=1;
-	getFile(i);
-	/*while(i<=10)
+	//getFile(i);
+	while(i<=10)
 	{
 		//cout<<"HELLO";
 		//cout<<endl<<endl<<endl<<endl<<endl;
 		int pos=0;
 		getFile(i);
 		i++;
-	}*/
+	}
 }
